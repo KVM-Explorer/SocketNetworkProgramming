@@ -81,6 +81,9 @@ void Ethernet::SetType(EthernetType type) {
         case EthernetType::InternetProtocol:
             type_ = htons(ETHERTYPE_IP);
             break;
+        case EthernetType::ARP:
+            type_ = htons(ETHERTYPE_ARP);
+            break;
         default:
             type_ = htons(ETHERTYPE_IP);
             break;

@@ -6,6 +6,7 @@
 
 enum class EthernetType{
     InternetProtocol,
+    ARP,
 };
 class Ethernet {
 private:
