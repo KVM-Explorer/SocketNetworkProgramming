@@ -12,6 +12,7 @@
 #include <sstream>
 #include <vector>
 #include <iostream>
+#define POLY        0x1021
 
 // tips ioctl 不能重复使用同一个变量,直接重复使用的话会导致获取的历史内容发生变更
 
@@ -118,4 +119,29 @@ void Ethernet::SendFrame() {
     auto message_length = sendto(raw_socket_, buffer_, buffer_length_,
                                  0, (const struct sockaddr *) &sender_info, sizeof(sender_info));
     printf("Send Buffer Size: %d", message_length);
+}
+
+
+/**
+ * Calculating CRC-16 in 'C'
+ * @para buffer, start of data
+ * @para num, length of data
+ * @para crc, incoming CRC
+ */
+uint16_t Ethernet::CrcSum(uint8_t *buffer, int num, uint16_t crc) {
+
+    int i;
+    for(int i=0;i<num;i++)
+    {
+        crc = crc ^ (*buffer++ << 8);     /* Fetch byte from memory, XOR into CRC top byte*/
+        for (i = 0; i < 8; i++)             /* Prepare to rotate 8 bits */
+        {
+            if (crc & 0x8000)            /* b15 is set... */
+                crc = (crc << 1) ^ POLY;    /* rotate and XOR with polynomic */
+            else                          /* b15 is clear... */
+                crc <<= 1;                  /* just rotate */
+        }                             /* Loop for 8 bits */
+        crc &= 0xFFFF;                  /* Ensure CRC remains 16-bit value */
+    }                               /* Loop until num=0 */
+    return(crc);                    /* Return updated CRC */
 }

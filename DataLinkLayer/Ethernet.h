@@ -29,7 +29,7 @@ public:
     void GenerateFrame(uint8_t *data, int length);
     void SendFrame();
 public:
-    static std::string CalculateCrc(std::string text);
+    static uint16_t CrcSum(uint8_t *buffer, int num, uint16_t crc);
 
 public:
 
