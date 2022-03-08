@@ -1,6 +1,7 @@
 #include "DataLinkLayer/Ethernet.h"
 #include "DataLinkLayer/CMSA2CD.h"
 #include "NetworkLayer/ArpRequest.h"
+#include "NetworkLayer/ArpReply.h"
 int main()
 {
     //=======================================
@@ -37,8 +38,11 @@ int main()
     //=========================================
     ArpRequest request("wlo1");
     request.SetIp2Mac("192.168.1.1","0:0:0:0:0:0");
-
     request.GenerateFrame();
+    // ARP 欺骗的原理在于监听ARP请求并发送应答伪造目的IP在此并发送自身mac地址
+    ArpReply reply("wlo1");
+    reply.SetIp2Mac("192.168.1.1","ef:fe:fe:fe:fe:fe");
+    reply.GenerateFrame();
 
 
 

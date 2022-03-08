@@ -6,6 +6,12 @@
 #include <net/if.h>
 #include "../DataLinkLayer/Ethernet.h"
 class Arp {
+public:
+    enum class ARPType
+    {
+        Request,
+        Reply,
+    };
 protected:
     uint8_t buffer_[28];
     arphdr arp_header_;
@@ -20,11 +26,10 @@ protected:
 public:
     Arp(std::string );
 
-
     ~Arp();
     void Init();
 
-    void SetAttribute();
+    void SetAttribute(ARPType type);
 
     void GenerateFrame();
 };

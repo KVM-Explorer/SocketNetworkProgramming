@@ -8,39 +8,29 @@
 
 Arp::Arp(std::string device): ethernet_(device)
 {
-    auto tmp_socket = socket(AF_PACKET,SOCK_RAW,IPPROTO_RAW);
-    memset(buffer_,0,sizeof (buffer_));
-    ifreq ifreq_mac,ifreq_ip;
-    memset(&ifreq_mac,0,sizeof(ifreq_mac));
-    memset(&ifreq_ip,0,sizeof (ifreq_ip));
-    printf("Device Name: %s\n",device.c_str());
-    strncpy(ifreq_ip.ifr_name,device.c_str(),IFNAMSIZ-1);
-    strncpy(ifreq_mac.ifr_name,device.c_str(),IFNAMSIZ -1);
-
-    if(ioctl(tmp_socket,SIOCGIFHWADDR,&ifreq_mac)<0)
-    {
-        printf("error in index ioctl reading\n");
-    }
-    if(ioctl(tmp_socket,SIOCGIFADDR,&ifreq_ip)<0)
-    {
-        printf("error in IP ioctl reading\n");
-    }
-    memcpy(arp_content_.source_mac_, ifreq_mac.ifr_hwaddr.sa_data, ETH_ALEN);
-    memcpy(arp_content_.source_ip_,ifreq_ip.ifr_addr.sa_data,4);
-    auto ip_address = (((struct sockaddr_in *)&(ifreq_ip.ifr_addr))->sin_addr);
-    memcpy(arp_content_.source_ip_,&ip_address,sizeof(ip_address));
 
     ethernet_.SetType(EthernetType::ARP);
-    ethernet_.SetMac("ff:ff:ff:ff:ff:ff");
+
 }
 
-void Arp::SetAttribute()
+void Arp::SetAttribute(ARPType type)
 {
     arp_header_.ar_hrd  = htons(ARPHRD_ETHER);
     arp_header_.ar_pro = htons(ETH_P_IP);
     arp_header_.ar_hln = ETH_ALEN;
     arp_header_.ar_pln = 4;
-    arp_header_.ar_op = htons(ARPOP_REQUEST);
+    switch (type) {
+        case ARPType::Request:
+            arp_header_.ar_op = htons(ARPOP_REQUEST);
+            break;
+        case ARPType::Reply:
+            arp_header_.ar_op = htons(ARPOP_REPLY);
+            break;
+        default:
+            arp_header_.ar_op = htons(ARPOP_REQUEST);
+            break;
+    }
+
 
 }
 
