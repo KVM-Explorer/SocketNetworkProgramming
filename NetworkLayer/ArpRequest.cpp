@@ -28,7 +28,7 @@ ArpRequest::ArpRequest(std::string device) : Arp(device)
     memcpy(arp_content_.source_ip_,&ip_address,sizeof(ip_address));
 
     this->SetAttribute(ARPType::Request);
-    ethernet_.SetMac("ff:ff:ff:ff:ff:ff");
+
 }
 
 ArpRequest::~ArpRequest() {
@@ -38,12 +38,14 @@ ArpRequest::~ArpRequest() {
 /**
  * Arp请求地址字段设置默认默认自动填写本地mac和ip地址，也可手动指定
  * @param target_address
- * @param target_mac
+ * @param target_mac    unused default broadcast in function
  * @param source_address
  * @param source_mac
  */
 void ArpRequest::SetIp2Mac(std::string target_address, std::string target_mac, std::string source_address,
                            std::string source_mac) {
+
+    ethernet_.SetMac("ff:ff:ff:ff:ff:ff");
     auto address_array = ([](std::string x,char ch) {
         std::stringstream splitor, sstream;
         std::string word;
