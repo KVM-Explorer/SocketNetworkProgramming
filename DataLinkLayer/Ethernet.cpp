@@ -17,7 +17,8 @@
 // tips ioctl 不能重复使用同一个变量,直接重复使用的话会导致获取的历史内容发生变更
 
 Ethernet::Ethernet(std::string device) {
-    raw_socket_ = socket(AF_PACKET, SOCK_RAW, IPPROTO_RAW);
+    raw_socket_ = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
+    memset(buffer_,0,sizeof(buffer_));
     printf("Raw Scocket ID:%d\n", raw_socket_);
 
     memset(&ifreq_index_, 0, sizeof(ifreq_index_));
@@ -93,6 +94,7 @@ void Ethernet::SetType(EthernetType type) {
 
 
 void Ethernet::GenerateFrame(uint8_t *data, int length) {
+
     /// Ethernet Layer
     struct ethhdr *ethernet_header = (struct ethhdr *) buffer_;
     memcpy(ethernet_header->h_dest, target_mac_, 6 * sizeof(uint8_t));
@@ -121,7 +123,7 @@ void Ethernet::SendFrame() {
     printf("\n");
     auto message_length = sendto(raw_socket_, buffer_, buffer_length_,
                                  0, (const struct sockaddr *) &sender_info, sizeof(sender_info));
-    printf("Send Buffer Size: %d", message_length);
+    printf("Send Buffer Size: %d\n", message_length);
 }
 
 
@@ -147,4 +149,68 @@ uint16_t Ethernet::CrcSum(uint8_t *buffer, int num, uint16_t crc) {
         crc &= 0xFFFF;                  /* Ensure CRC remains 16-bit value */
     }                               /* Loop until num=0 */
     return(crc);                    /* Return updated CRC */
+}
+
+/**
+ * @brief receive packet with raw socket
+ * @return
+ */
+int Ethernet::Listen() {
+    int address_length = sizeof(socket_address_);
+    memset(&socket_address_,0,sizeof(socket_address_));
+
+    // Receive Net package
+    receive_length_ = recvfrom(raw_socket_,buffer_,65535,0,&socket_address_,(socklen_t *)&address_length);
+
+    if(receive_length_<0)
+    {
+        printf("error in reading recvfrom function\n");
+        return -1;
+    }
+
+    auto ethernet_header = (struct ethhdr*) buffer_;
+    receive_type_ = ntohs(ethernet_header->h_proto);
+    return receive_length_;
+}
+
+/**
+ * @brief 对接受的frame进行以太网层的分析和捷报
+ * @param content 原始buffer地址
+ * @return
+ */
+void Ethernet::ExtractFrame(uint8_t *content)
+{
+    struct ethhdr *ethernet_header = (struct ethhdr*)(content);
+    printf("Ethernet Source Address: ");
+    for(int i=0;i<6;i++)
+    {
+        if(i!=5)printf("%02x:",ethernet_header->h_source[i]);
+        else printf("%02x",ethernet_header->h_source[i]);
+    }
+    printf("\n");
+    printf("Ethernet Destination Address: ");
+    for(int i=0;i<6;i++)
+    {
+        if(i!=5)printf("%02x:",ethernet_header->h_dest[i]);
+        else printf("%02x",ethernet_header->h_dest[i]);
+    }
+    printf("\n");
+    printf("Ethernet Protocol: %x\n",ntohs(ethernet_header->h_proto));
+
+    return;
+
+}
+
+EthernetType Ethernet::GetRecvType() {
+    switch (receive_type_) {
+        case ETHERTYPE_IP:
+            return EthernetType::InternetProtocol;
+            break;
+        case ETHERTYPE_ARP:
+            return EthernetType::ARP;
+            break;
+        default:
+            return EthernetType::Unknow;
+            break;
+    }
 }
