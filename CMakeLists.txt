@@ -2,10 +2,13 @@ project("SocketNetworkProgramming")
 cmake_minimum_required(VERSION 3.10)
 set(CMAKE_CXX_STANDARD 17)
 set(TARGET_NAME "UnitTest")
-file(GLOB_RECURSE TARGET_SOURCE "DataLinkLayer/*.cpp" "NetworkLayer/*.cpp")
-file(GLOB_RECURSE TARGET_HEADER "DataLinkLayer/*.h" "NetworkLayer/*.h")
+file(GLOB_RECURSE TARGET_SOURCE "DataLinkLayer/*.cpp" "NetworkLayer/*.cpp" "TransportLayer/*.cpp")
+file(GLOB_RECURSE TARGET_HEADER "DataLinkLayer/*.h" "NetworkLayer/*.h" "TransportLayer/*.h")
 
 add_executable(${TARGET_NAME}  ${TARGET_HEADER} ${TARGET_SOURCE}  test.cpp)
+
+add_executable(client client_test.cpp Chat/ChatClient.h Chat/ChatClient.cpp)
+add_executable(serve serve_test.cpp Chat/ChatServer.h Chat/ChatServer.cpp)
 
 # In Linux, 'Threads' need to explicitly linked.
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")

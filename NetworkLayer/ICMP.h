@@ -1,5 +1,6 @@
 #pragma once
 #include <netinet/ip_icmp.h>
+#include <netinet/ip.h>
 #include "../DataLinkLayer/Ethernet.h"
 class ICMP {
 

@@ -4,6 +4,8 @@
 #include "NetworkLayer/ArpReply.h"
 #include "NetworkLayer/IPJudger.h"
 #include "NetworkLayer/ICMP.h"
+#include "NetworkLayer/IP.h"
+#include "TransportLayer/UDP.h"
 int main()
 {
 
@@ -63,10 +65,11 @@ int main()
     //=============================================
     // ping
     //=============================================
-    ICMP icmp("wlo1");
-    icmp.Ping("39.156.66.18");
-    icmp.Tracert("39.156.66.18");
+//    ICMP icmp("wlo1");
+//    icmp.Ping("39.156.66.18");
+//    icmp.Tracert("39.156.66.18");
 
+    UDP udp("wlo1",6666);
 
 
 }

@@ -16,7 +16,7 @@
 ICMP::ICMP(std::string device) : ethernet_(device)
 {
 
-    int raw_socket = socket(AF_PACKET,SOCK_RAW, htons(ETH_P_802_3));
+    int raw_socket = socket(AF_PACKET,SOCK_RAW, htons(ETH_P_ALL));
     memset(buffer_,0,sizeof(buffer_));
 
     memset(&ifreq_ip_, 0, sizeof(ifreq_ip_));
@@ -50,7 +50,7 @@ void ICMP::ICMPEcho(int ttl)
     // IP Header
     ip_header_.version = 4;
     ip_header_.ihl = 5;
-    ip_header_.tos = IPTOS_CLASS_CS3;
+    ip_header_.tos = IPTOS_LOWDELAY;
     ip_header_.tot_len = total_length_;
     ip_header_.id = htons(10201);
     ip_header_.ttl = ttl;
