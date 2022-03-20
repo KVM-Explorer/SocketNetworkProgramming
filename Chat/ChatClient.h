@@ -26,6 +26,7 @@ public:
     void SendMessage(std::string message);
     void Listen();
     bool Logout();
+    std::string GetName();
 
 
 };

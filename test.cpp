@@ -30,21 +30,9 @@ int main()
     // CSMA/CD 算法模拟
     //========================================
     //Todo 碰撞展示不明显需要进一步改进
-//    int host_num = 20;
-//    std::vector<CMSA2CD> hosts;
-//    for(int i=0;i<host_num;i++)
-//    {
-//        hosts.push_back(CMSA2CD("Hello World",1,i));
-//    }
-//    for(auto iter = hosts.begin();iter!=hosts.end();iter++)
-//    {
-//        (*iter).CreateTask();
-//    }
-//    for(auto iter = hosts.begin();iter!=hosts.end();iter++)
-//    {
-//        (*iter).EndTask();
-//    }
-
+    auto channel = std::shared_ptr<char[]>(new char[100]);
+    channel[0] = 1;
+    CMSA2CD
     //=========================================
     // ARP Request
     //=========================================
@@ -69,7 +57,7 @@ int main()
 //    icmp.Ping("39.156.66.18");
 //    icmp.Tracert("39.156.66.18");
 
-    UDP udp("wlo1",6666);
+//    UDP udp("wlo1",6666);
 
 
 }

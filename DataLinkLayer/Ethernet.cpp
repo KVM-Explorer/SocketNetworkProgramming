@@ -3,15 +3,13 @@
 #include <netinet/udp.h>
 #include <sys/socket.h>
 #include <memory.h>
-#include <cstdlib>
 #include <netinet/if_ether.h>
-#include <arpa/inet.h>
-#include <linux/if_ether.h>
-#include <linux/if_packet.h>
 #include <sys/ioctl.h>
 #include <sstream>
 #include <vector>
 #include <iostream>
+#include <netpacket/packet.h>
+
 #define POLY        0x1021
 
 // tips ioctl 不能重复使用同一个变量,直接重复使用的话会导致获取的历史内容发生变更

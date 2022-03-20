@@ -7,6 +7,7 @@ int main()
 {
     ChatServer server;
     server.Init();
+
     while (true)
     {
         server.Listen();
