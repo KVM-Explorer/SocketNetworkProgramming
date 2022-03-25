@@ -7,6 +7,8 @@ using State = CMSA2CD::State;
 CMSA2CD::CMSA2CD(char hostname, int flag,std::shared_ptr<char[]> ptr) {
     id_ = hostname;
     buffer_ptr_ = ptr;
+    bit_time_ = 10;
+    Clear();
 }
 CMSA2CD::~CMSA2CD() {}
 
@@ -16,6 +18,9 @@ CMSA2CD::~CMSA2CD() {}
  */
 void CMSA2CD::Listen(int pos) {
     using namespace std::chrono;
+    using namespace std;
+    string message = "Host: "+to_string(id_)+" Listening";
+    std::cout<<message<<std::endl;
     state_ = State::confirming;
     int res_bits = 96;
     for(res_bits;res_bits>0;res_bits--)
@@ -43,11 +48,13 @@ void CMSA2CD::Stimulate()
             case State::listen:
                 Listen(st_pos);
                 state_ = State::sending;
+
                 break;
             case State::sending:
                 if(Send(st_pos))
                 {   // 发送成功继续发送
                     state_ = State::listen;
+                    std::cout<<"Host: "<<id_<<" Send message successfully"<<endl;
                     retransmit = 0;
                     Clear();
                 }else
@@ -72,18 +79,24 @@ void CMSA2CD::Stimulate()
 
 void CMSA2CD::BackoffAlgorithm(int retansmit_count)
 {
+    using namespace std;
     using namespace std::chrono;
     int k = std::min(retansmit_count,10);
-    srand((unsigned ) time(NULL));
-    int r = rand()%(int)pow(2,k);
+    // 时间过于相近而倒是srand内容相同
+    int r = rand()%(int)pow(2,k);       // 取模数后范围在0——2^(k-1)
 
-    //Todo 缩小r以强化显示冲突
-    r = r%4;
-    std::this_thread::sleep_for(milliseconds((r*64*8)*bit_time_));     //r倍的征用期一个以太帧64字节*8bit
+    string messgae = "Host: "+ to_string(id_)+" Back off: "+ to_string(retansmit_count)
+            +" r="+ to_string(r);
+    std::cout<<messgae<<std::endl;
+//    r = r%4;    //缩小r以强化显示冲突
+    // 以太网默认的征用期为512bit是以10M/s网速和其他内容计算所得，实际上从协议讲应该是2*t t是单程时延
+    std::this_thread::sleep_for(milliseconds(r*2*(100)*bit_time_));     //r倍的征用期以太网以一个太帧64字节*8bit
 }
 
 bool CMSA2CD::Send(int st) {
     using namespace std::chrono;
+    using namespace std;
+    std::cout<<"Host: "<<id_<<" Sending Message"<<endl;
     int delta_pos = 0;
     int data = 64*8+8*8; // 最小帧长加帧前同步
     while (data>0)
@@ -109,13 +122,15 @@ bool CMSA2CD::Send(int st) {
 
         }else
         {
+            // 发生冲突
+            using namespace std;
+            //Todo 冲突为中总是50???
+            string message  = "Meeting Confict in "+ to_string(abs(delta_pos))+'\n';
+            cout<<message;
             return false;
         }
         std::this_thread::sleep_for(milliseconds(bit_time_));
     }
-
-    // 发生冲突
-    return false;
 }
 
 void CMSA2CD::Clear() {
@@ -125,5 +140,6 @@ void CMSA2CD::Clear() {
 int CMSA2CD::AddPos(int &x) {
     return flag==0?x=x+1:x=x-1;
 }
+
 
 
