@@ -1,7 +1,7 @@
 //
 // Created by geek on 2022/3/14.
 //
-#include "Chat/ChatServer.h"
+#include "../Chat/ChatServer.h"
 
 int main()
 {

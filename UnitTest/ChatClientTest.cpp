@@ -5,7 +5,7 @@
 #include <csignal>
 #include <iostream>
 #include <thread>
-#include "Chat/ChatClient.h"
+#include "../Chat/ChatClient.h"
 
 int main()
 {

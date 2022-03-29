@@ -1,11 +1,11 @@
-#include "DataLinkLayer/Ethernet.h"
-#include "DataLinkLayer/CMSA2CD.h"
-#include "NetworkLayer/ArpRequest.h"
-#include "NetworkLayer/ArpReply.h"
-#include "NetworkLayer/IPJudger.h"
-#include "NetworkLayer/ICMP.h"
-#include "NetworkLayer/IP.h"
-#include "TransportLayer/UDP.h"
+#include "../DataLinkLayer/Ethernet.h"
+#include "../DataLinkLayer/CMSA2CD.h"
+#include "../NetworkLayer/ArpRequest.h"
+#include "../NetworkLayer/ArpReply.h"
+#include "../NetworkLayer/IPJudger.h"
+#include "../NetworkLayer/ICMP.h"
+#include "../NetworkLayer/IP.h"
+#include "../TransportLayer/UDP.h"
 int main()
 {
 
@@ -29,7 +29,6 @@ int main()
     //========================================
     // CSMA/CD 算法模拟
     //========================================
-    //Todo 碰撞展示不明显需要进一步改进
     auto channel = std::shared_ptr<char[]>(new char[100]);
     srand((unsigned int)time(NULL));
     channel[0] = 1;

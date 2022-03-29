@@ -4,11 +4,9 @@
 
 class UDP {
 private:
-    uint16_t source_port_;
-    uint16_t target_port_;
+    struct sockaddr_in target_address_;
+    int udp_socket_;
 protected:
-    IP ip_;
-    struct udphdr udp_header_;
     uint8_t buffer_[65535];
 
 public:
