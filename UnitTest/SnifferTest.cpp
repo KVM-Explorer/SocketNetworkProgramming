@@ -12,6 +12,7 @@
 #include <netinet/udp.h>
 #include <netinet/tcp.h>
 #include <netinet/in.h>
+#include <netinet/ip_icmp.h>
 #include <sys/ioctl.h>
 #include <net/if.h>
 #include <iostream>
@@ -20,17 +21,20 @@
 
 using namespace std;
 
+// F
 enum class FrameType{
     IP,
     ARP,
     TCP,
     UDP,
+    ICMP,
     TEST
 };
 
 // F
 void udp_header(uint8_t *buffer,int len)
 {
+    printf("Protocol UDP\n");
     struct udphdr   *udp;
     udp = (struct udphdr*)buffer;
     printf("Src port:%d ", ntohs(udp->source));
@@ -40,11 +44,14 @@ void udp_header(uint8_t *buffer,int len)
 // F
 void tcp_header(uint8_t *buffer,int len)
 {
+    printf("Protocol TCP\n");
     struct tcphdr *tcp;
     tcp = (struct tcphdr*)buffer;
     printf("Src port: %d ", ntohs(tcp->source));
     printf("Dst port: %d\n", ntohs(tcp->dest));
 }
+
+// Todo
 void arp_header(uint8_t *buffer,int len)
 {
     struct arphdr *arp;
@@ -52,6 +59,17 @@ void arp_header(uint8_t *buffer,int len)
 
 }
 
+// F
+void icmp_header(uint8_t* buffer,int len)
+{
+    printf("Protocol: ICMP\n");
+    struct icmphdr *icmp;
+    icmp = (struct icmphdr*)buffer;
+    printf("ICMP code:%d\n",icmp->code);
+    printf("ICMP type:%d\n",icmp->type);
+    printf("ICMP checksum%d\n",icmp->checksum);
+
+}
 
 // F
 FrameType ethernet_header(uint8_t* buffer,int len)
@@ -84,15 +102,20 @@ FrameType ip_header(uint8_t* buffer,int len)
     printf("IP total length:%d\n",ip->tot_len);
     printf("Src IP Address:%s\n",inet_ntoa(source.sin_addr));
     printf("Dst IP Address:%s\n", inet_ntoa(dest.sin_addr));
-    if(ip->protocol==6)
+
+    switch (ip->protocol)
     {
-        printf("Protocol TCP\n");
-        return FrameType::TCP;
-    }else
-    {
-        printf("Protocol UDP\n");
-        return FrameType::UDP;
+        case IPPROTO_TCP:
+            return FrameType::TCP;
+            break;
+        case IPPROTO_UDP:
+            return FrameType::UDP;
+            break;
+        case IPPROTO_ICMP:
+            return FrameType::ICMP;
+            break;
     }
+
 
 
 }
@@ -140,6 +163,7 @@ int main()
                 tmp_type = ip_header(buffer+14,n-14);
                 if(tmp_type==FrameType::UDP) udp_header(buffer+14+sizeof(iphdr),n-14-sizeof(iphdr));
                 if(tmp_type==FrameType::TCP) tcp_header(buffer+14+sizeof(iphdr),n-14-sizeof(iphdr));
+                if(tmp_type==FrameType::ICMP)icmp_header(buffer+14+sizeof(iphdr),n-14-sizeof(iphdr));
                 break;
             default:
                 break;
