@@ -54,9 +54,25 @@ void tcp_header(uint8_t *buffer,int len)
 // Todo
 void arp_header(uint8_t *buffer,int len)
 {
+    printf("Protocol ARP\n");
     struct arphdr *arp;
-    arp = (struct arphdr*)buffer;
+    struct ether_arp *arp_addr;
+    struct sockaddr_in source,dest;
 
+    arp = (struct arphdr*)buffer;
+    arp_addr = (struct ether_arp*)(buffer+sizeof(arphdr));
+
+
+    printf("Sender mac address: %02x:%02x:%02x:%02x:%02x:%02x\n",
+           arp_addr->arp_sha[0], arp_addr->arp_sha[1], arp_addr->arp_sha[2],
+           arp_addr->arp_sha[3], arp_addr->arp_sha[4], arp_addr->arp_sha[5]);
+    printf("Sender ip address: %d.%d.%d.%d\n",
+           arp_addr->arp_tpa[0],arp_addr->arp_spa[1],arp_addr->arp_spa[2],arp_addr->arp_spa[3]);
+    printf("Target ip address: %d.%d.%d.%d\n",
+           arp_addr->arp_tpa[0],arp_addr->arp_tpa[1],arp_addr->arp_tpa[2],arp_addr->arp_tpa[3]);
+    printf("Target mac address: %02x:%02x:%02x:%02x:%02x:%02x\n",
+           arp_addr->arp_tha[0], arp_addr->arp_tha[1], arp_addr->arp_tha[2],
+           arp_addr->arp_tha[3], arp_addr->arp_tha[4], arp_addr->arp_tha[5]);
 }
 
 // F
