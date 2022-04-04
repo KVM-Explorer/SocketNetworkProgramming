@@ -168,6 +168,23 @@ int Ethernet::Listen() {
 
     auto ethernet_header = (struct ethhdr*) buffer_;
     receive_type_ = ntohs(ethernet_header->h_proto);
+    printf("Dest MAC Address: %02x:%02x:%02x:%02x:%02x:%02x ",
+           ethernet_header->h_source[0],
+           ethernet_header->h_source[1],
+           ethernet_header->h_source[2],
+           ethernet_header->h_source[3],
+           ethernet_header->h_source[4],
+           ethernet_header->h_source[5]);
+
+    printf("Dest MAC Address: %02x:%02x:%02x:%02x:%02x:%02x ",
+           ethernet_header->h_dest[0],
+           ethernet_header->h_dest[1],
+           ethernet_header->h_dest[2],
+           ethernet_header->h_dest[3],
+           ethernet_header->h_dest[4],
+           ethernet_header->h_dest[5]);
+
+    printf("Protocol : %d\n",ethernet_header->h_proto);
     return receive_length_;
 }
 
