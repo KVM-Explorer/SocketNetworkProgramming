@@ -55,13 +55,9 @@ void tcp_header(uint8_t *buffer,int len)
 void arp_header(uint8_t *buffer,int len)
 {
     printf("Protocol ARP\n");
-    struct arphdr *arp;
     struct ether_arp *arp_addr;
-    struct sockaddr_in source,dest;
 
-    arp = (struct arphdr*)buffer;
-    arp_addr = (struct ether_arp*)(buffer+sizeof(arphdr));
-
+    arp_addr = (struct ether_arp*)(buffer);
 
     printf("Sender mac address: %02x:%02x:%02x:%02x:%02x:%02x\n",
            arp_addr->arp_sha[0], arp_addr->arp_sha[1], arp_addr->arp_sha[2],
@@ -95,12 +91,13 @@ FrameType ethernet_header(uint8_t* buffer,int len)
            buffer[0],buffer[1],buffer[2],buffer[3],buffer[4],buffer[5]);
     printf("Src MAC Address: %02x:%02x:%02x:%02x:%02x:%02x\n",
            buffer[0+6],buffer[1+6],buffer[2+6],buffer[3+6],buffer[4+6],buffer[5+6]);
-    auto proto = (uint16_t)buffer[12];
-    if(proto==8)
+    auto proto = (uint16_t*)&buffer[12];
+    if(*proto== htons(ETHERTYPE_IP))
     {
         printf("Ethernet Protocol: IP\n");
         return FrameType::IP;
-    }else {
+    }
+    if(*proto== htons(ETHERTYPE_ARP)){
         printf("Ethernet Protocol: ARP\n");
         return FrameType::ARP;
     }
