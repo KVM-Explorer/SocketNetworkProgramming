@@ -23,13 +23,15 @@ protected:
         uint8_t target_mac_[ETH_ALEN];
         uint8_t target_ip_[4];
     }arp_content_;
+
+    void SetAttribute(ARPType type);
 public:
     Arp(std::string );
 
     ~Arp();
-    void Init();
+    virtual void Init() = 0;
 
-    void SetAttribute(ARPType type);
+
 
     void GenerateFrame();
 };

@@ -56,9 +56,7 @@ Arp::~Arp() {
 
 }
 
-void Arp::Init() {
 
-}
 
 
 

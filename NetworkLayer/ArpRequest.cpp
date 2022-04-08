@@ -38,7 +38,7 @@ ArpRequest::~ArpRequest() {
 /**
  * Arp请求地址字段设置默认默认自动填写本地mac和ip地址，也可手动指定
  * @param target_address
- * @param target_mac    unused default broadcast in function
+ * @param target_mac    用于填充ARP协议的目标mac地址
  * @param source_address
  * @param source_mac
  */
@@ -79,4 +79,8 @@ void ArpRequest::SetIp2Mac(std::string target_address, std::string target_mac, s
     target_vector = address_array(target_address,'.');
     for (int i = 0; i < 4; i++) arp_content_.target_ip_[i] = target_vector[i];
 
+}
+
+void ArpRequest::Init() {
+    SetAttribute(ARPType::Request);
 }

@@ -71,3 +71,8 @@ void ArpReply::SetIp2Mac(std::string target_address, std::string target_mac, std
     target_vector = address_array(target_address,'.');
     for (int i = 0; i < 4; i++) arp_content_.source_ip_[i] = target_vector[i];
 }
+
+void ArpReply::Init() {
+    SetAttribute(ARPType::Reply);
+}
+
