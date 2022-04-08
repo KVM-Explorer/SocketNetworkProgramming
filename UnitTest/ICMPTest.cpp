@@ -6,15 +6,26 @@
 void ping()
 {
     ICMP icmp("wlo1");
-    icmp.Ping("172.24.255.254");
+    icmp.Ping("39.156.66.14");
 }
 
 void tracert()
 {
-
+    ICMP icmp("wlo1");
+    icmp.Tracert("39.156.66.14");
 }
 
 int main()
 {
-    ping();
+    int signal = 1;
+    switch (signal) {
+        case 0:
+            ping();
+            break;
+        case 1:
+            tracert();
+            break;
+        default:
+            break;
+    }
 }

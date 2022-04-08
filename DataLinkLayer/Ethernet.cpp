@@ -93,13 +93,14 @@ void Ethernet::SetType(EthernetType type) {
 
 void Ethernet::GenerateFrame(uint8_t *data, int length) {
 
+    buffer_length_ = 0;
     /// Ethernet Layer
     struct ethhdr *ethernet_header = (struct ethhdr *) buffer_;
     memcpy(ethernet_header->h_dest, target_mac_, 6 * sizeof(uint8_t));
     memcpy(ethernet_header->h_source, source_mac_, 6 * sizeof(uint8_t));
     ethernet_header->h_proto = type_;
     buffer_length_ += sizeof(struct ethhdr);
-    printf("Ethernet Header Lenghth = %d\n", buffer_length_);
+    printf("Ethernet Header Length = %d\n", buffer_length_);
 
     // Network Layer Data
     memcpy(buffer_ + buffer_length_, data, length);

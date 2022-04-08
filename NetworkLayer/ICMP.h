@@ -6,7 +6,7 @@ class ICMP {
 
 protected:
     struct iphdr ip_header_;
-    struct icmphdr icmp_message_;
+    struct icmp icmp_message_;
     Ethernet ethernet_;
     uint8_t buffer_[65536];
     uint16_t total_length_;

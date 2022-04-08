@@ -12,6 +12,7 @@
 #include <netpacket/packet.h>
 #include <net/ethernet.h>
 #include <linux/filter.h>
+#include <sys/time.h>
 
 ICMP::ICMP(std::string device) : ethernet_(device)
 {
@@ -40,41 +41,49 @@ ICMP::ICMP(std::string device) : ethernet_(device)
 
 ICMP::~ICMP() {}
 
-// Todo make it length>=64 bytes
 
 void ICMP::ICMPEcho(int ttl)
 {
     memset(buffer_,0,sizeof(buffer_));
     int index = 0;
-    //Todo total_length_ = buffer+ ethernet_header
     // IP Header
     ip_header_.version = 4;
     ip_header_.ihl = 5;
     ip_header_.tos = IPTOS_LOWDELAY;
-    ip_header_.tot_len = total_length_;
     ip_header_.id = htons(10201);
     ip_header_.ttl = ttl;
     ip_header_.protocol = IPPROTO_ICMP;
     ip_header_.saddr = source_address_;
     ip_header_.daddr = target_address_;
-    memcpy(buffer_,&ip_header_,sizeof(ip_header_));
+    ip_header_.check =  0;
+
+
+
     index += sizeof(ip_header_);
 
     //ICMP
+    struct timeval *time;
     auto pid = getpid();
-    icmp_message_.type = ICMP_ECHO;     //  1bytes
-    icmp_message_.code = 0;             //  1bytes
-    icmp_message_.un.echo.id = pid;     //  2bytes
-    icmp_message_.un.echo.sequence = 2; //  2bytes
+    icmp_message_.icmp_type = ICMP_ECHO;     //  1bytes
+    icmp_message_.icmp_code = 0;             //  1bytes
+    icmp_message_.icmp_id = htons(2);     //  2bytes
+    icmp_message_.icmp_seq = htons(2); //  2bytes
+    time = (struct timeval*)icmp_message_.icmp_data;    // 1 bytes
+    gettimeofday(time,NULL);
     icmp_length_ = sizeof(icmp_message_); // 64 - Ethernet:14 - IP Header:20 = 26
-    // Todo 填充icmp报文消息
-    icmp_message_.checksum = CheckSum((uint8_t *)&icmp_message_,icmp_length_);
+    icmp_message_.icmp_cksum = 0;
+    icmp_message_.icmp_cksum = CheckSum((uint8_t *)&icmp_message_,icmp_length_);
+
+    ip_header_.tot_len = htons(sizeof(struct iphdr)+sizeof(struct icmp));
+    ip_header_.check = CheckSum(reinterpret_cast<uint8_t*>(&ip_header_),sizeof(struct iphdr));
+    memcpy(buffer_,&ip_header_,sizeof(ip_header_));
     memcpy(buffer_+index,&icmp_message_,sizeof(icmp_message_));
+
     index+=sizeof(icmp_message_);
 
     printf("ICMP Message Length: %d\n",sizeof(icmp_message_));
 
-    ethernet_.SetMac("08:71:90:01:F8:E2");
+    ethernet_.SetMac("10:51:72:27:b9:ab");
     ethernet_.SetType(EthernetType::InternetProtocol);
     ethernet_.GenerateFrame(buffer_,index);
     ethernet_.SendFrame();
@@ -127,28 +136,13 @@ void ICMP::Ping(std::string ip)
 
 void ICMP::Tracert(std::string ip)
 {
-    auto split=[](std::string x)
-    {
-        std::stringstream splitor, sstream;
-        std::string word;
-        int index=0;
-        uint8_t address[4];
-        uint32_t ip;
-        splitor << x;
-        while (getline(splitor, word, '.')) {
-            sstream.clear();
-            sstream<<word;
-            sstream >>address[index++];
-        }
-        memcpy(&ip,address,4);
-        return ip;
-    };
-    target_address_ = split(ip);
-    for(int i=1;i<32;i++)
+
+    target_address_ = inet_addr(ip.c_str());;
+    for(int i=1;i<32;i+=1)
     {
         ICMPEcho(i);
         Listen();
-// todo if(/*监测到ip*/)break;
+//        sleep(1);
     }
 }
 
@@ -159,21 +153,36 @@ int ICMP::ExtractFrame(uint8_t *data, int length) {
     printf("IP Header-> Source: %s\n", inet_ntoa(address));
     address.s_addr = ip->daddr;
     printf("IP Header-> Target: %s\n", inet_ntoa(address));
+
+
+    struct icmp *icmp_msg = reinterpret_cast<struct icmp*>((data+sizeof(struct iphdr)));
+    printf("ICMP Type: %d\n",icmp_msg->icmp_type);
+    printf("ICMP Code: %d\n",icmp_msg->icmp_code);
+
     return 0;
 }
 
 uint16_t ICMP::CheckSum(uint8_t *data, int len) {
 
-    int p = len%2;
-    uint16_t sum = 0;
-    for(int i=0;i<len;i+=2)
-        sum+=data[i]+(data[i+1]<<8);
-    if (p==1) sum+=data[len-1];
-    while (sum>>16)
+    int res = len;
+    int sum = 0;
+    uint16_t *w = (uint16_t *)data;
+    uint16_t answer = 0;
+
+    while (res>1)
     {
-        sum = (sum&0xffff)+(sum>>16);
+        sum+=*w++;
+        res-=2;
+    }
+    if(res==1)
+    {
+        auto tmp = *(uint8_t*)w;
+        sum+=tmp;
     }
 
-    return ~sum;
+    sum = (sum>>16)+(sum&0xffff);
+    sum += sum>>16;
+    answer = ~sum;
+    return  answer;
 }
 
