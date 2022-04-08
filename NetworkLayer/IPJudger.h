@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <vector>
 class IPJudger {
     enum class IpResult
     {
