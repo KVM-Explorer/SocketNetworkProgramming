@@ -51,7 +51,7 @@ void tcp_header(uint8_t *buffer,int len)
     printf("Dst port: %d\n", ntohs(tcp->dest));
 }
 
-// Todo
+// F
 void arp_header(uint8_t *buffer,int len)
 {
     printf("Protocol ARP\n");
@@ -114,8 +114,7 @@ FrameType ip_header(uint8_t* buffer,int len)
     struct sockaddr_in source,dest;
     source.sin_addr.s_addr = ip->saddr;
     dest.sin_addr.s_addr = ip->daddr;
-    printf("IP protocol: %d\n",ip->version);
-    printf("IP total length:%d\n",ip->tot_len);
+    printf("IP protocol: IPv%d\n",ip->version);
     printf("Src IP Address:%s\n",inet_ntoa(source.sin_addr));
     printf("Dst IP Address:%s\n", inet_ntoa(dest.sin_addr));
 
@@ -137,55 +136,61 @@ FrameType ip_header(uint8_t* buffer,int len)
 }
 int main()
 {
-    int raw_socket , n;
-    uint8_t buffer[2048];
-    struct ifreq ethreq;
-    struct sockaddr saddr;
-    int saddr_len;
-    raw_socket = socket(AF_PACKET,SOCK_RAW, htons((ETH_P_ALL)));
-    if(raw_socket<0)    throw "Raw socket create failed";
+    try {
+        int raw_socket , n;
+        uint8_t buffer[2048];
+        struct ifreq ethreq;
+        struct sockaddr saddr;
+        int saddr_len;
+        raw_socket = socket(AF_PACKET,SOCK_RAW, htons((ETH_P_ALL)));
+        if(raw_socket<0)    throw "Raw socket create failed";
 
-    strncpy(ethreq.ifr_name,"wlo1",IF_NAMESIZE);
-    if(ioctl(raw_socket,SIOCGIFFLAGS,&ethreq)==-1) throw "set mix mode failed";
+        strncpy(ethreq.ifr_name,"wlo1",IF_NAMESIZE);
+        if(ioctl(raw_socket,SIOCGIFFLAGS,&ethreq)==-1) throw "set mix mode failed";
 
-    ethreq.ifr_flags |= IFF_PROMISC;    // 设置混杂模式
-    if(ioctl(raw_socket,SIOCSIFFLAGS,&ethreq)==-1) throw "set sif failed";
+        ethreq.ifr_flags |= IFF_PROMISC;    // 设置混杂模式
+        if(ioctl(raw_socket,SIOCSIFFLAGS,&ethreq)==-1) throw "set sif failed";
 
-    int count = 0;
-    while (true)
-    {
-        n = recvfrom(raw_socket,buffer,2048,0,NULL,NULL);
-        count++;
-        cout<<"================"<<count<<"================"<<endl;
-        cout<<"frame length: "<<n<<endl;
-
-        if(n<42) throw "Receive incomplete packet";
-        auto type = ethernet_header(buffer,14);
-        if(type==FrameType::TEST)
+        int count = 0;
+        while (true)
         {
-            printf("Loacl Communicate\n");
-            continue;
+            n = recvfrom(raw_socket,buffer,2048,0,NULL,NULL);
+
+
+
+            if(n<42) throw "Receive incomplete packet";
+            auto type = ethernet_header(buffer,14);
+            if(type==FrameType::TEST)
+            {
+//            printf("Loacl Communicate\n");
+                continue;
+            }
+
+            cout<<"frame length: "<<n<<endl;
+
+            FrameType tmp_type;
+
+            switch (type) {
+                case FrameType::ARP:
+                    arp_header(buffer+14,n-14);
+                    break;
+                case FrameType::IP:
+                    tmp_type = ip_header(buffer+14,n-14);
+                    if(tmp_type==FrameType::UDP) udp_header(buffer+14+sizeof(iphdr),n-14-sizeof(iphdr));
+                    if(tmp_type==FrameType::TCP) tcp_header(buffer+14+sizeof(iphdr),n-14-sizeof(iphdr));
+                    if(tmp_type==FrameType::ICMP)icmp_header(buffer+14+sizeof(iphdr),n-14-sizeof(iphdr));
+                    break;
+                default:
+                    break;
+            }
+
+            count++;
+            cout<<"================"<<count<<"================"<<endl;
         }
-
-
-
-        FrameType tmp_type;
-
-        switch (type) {
-            case FrameType::ARP:
-                arp_header(buffer+14,n-14);
-                break;
-            case FrameType::IP:
-                tmp_type = ip_header(buffer+14,n-14);
-                if(tmp_type==FrameType::UDP) udp_header(buffer+14+sizeof(iphdr),n-14-sizeof(iphdr));
-                if(tmp_type==FrameType::TCP) tcp_header(buffer+14+sizeof(iphdr),n-14-sizeof(iphdr));
-                if(tmp_type==FrameType::ICMP)icmp_header(buffer+14+sizeof(iphdr),n-14-sizeof(iphdr));
-                break;
-            default:
-                break;
-        }
-
-
+    }catch (const char * msg)
+    {
+        cout<<msg;
     }
+
 
 }
