@@ -85,14 +85,14 @@ int build_tcp(uint8_t* buffer, int length )
     tcp_header->source = htons(src_port);
     tcp_header->dest = htons(dst_port);
     tcp_header->seq = random();
-    tcp_header->syn = TCP_SYN_SENT;
+    tcp_header->th_flags = TCP_SYN_SENT;
     tcp_header->check = 0;
     tcp_header->th_off = 5;
 
     st += sizeof(struct tcphdr);
     // Check
     ip_header->tot_len = htons(sizeof(struct iphdr)+sizeof(struct tcphdr));
-    ip_header->check = check_sum((uint8_t*)ip_header,sizeof(ip_header));
+    ip_header->check = check_sum((uint8_t*)ip_header,sizeof(struct iphdr));
     return st;
 }
 
