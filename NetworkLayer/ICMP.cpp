@@ -47,7 +47,7 @@ void ICMP::ICMPEcho(int ttl)
     memset(buffer_,0,sizeof(buffer_));
     int index = 0;
     // IP Header
-    ip_header_.version = 4;
+    ip_header_.version = IPVERSION;
     ip_header_.ihl = 5;
     ip_header_.tos = IPTOS_LOWDELAY;
     ip_header_.id = htons(10201);

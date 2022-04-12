@@ -17,7 +17,7 @@ void tracert()
 
 int main()
 {
-    int signal = 1;
+    int signal = 0;
     switch (signal) {
         case 0:
             ping();
