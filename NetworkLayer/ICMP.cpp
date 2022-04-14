@@ -13,6 +13,7 @@
 #include <net/ethernet.h>
 #include <linux/filter.h>
 #include <sys/time.h>
+#include <unistd.h>
 
 ICMP::ICMP(std::string device) : ethernet_(device)
 {
